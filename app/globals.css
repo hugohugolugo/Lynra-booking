@@ -1,26 +1,76 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  /* Lynra Brand Colors */
+  --color-lynra-ember: #FF4D4F;
+  --color-lynra-umber: #4D0B00;
+  --color-lynra-clay: #ABA69B;
+  --color-lynra-granite: #3E3B34;
+  --color-lynra-ash: #F6F4F4;
+  --color-lynra-obsidian: #242428;
+  --color-lynra-haze: #999999;
+  --color-lynra-aluminium: #D6D0CC;
+  --color-lynra-white: #FFFFFF;
+
+  /* Lynra Typography */
+  --font-display: "Funnel Display", sans-serif;
+  --font-body: "Inter Tight", sans-serif;
+  --font-quote: "Frank Ruhl Libre", serif;
+
+  /* Typography Scale (Golden Ratio 1.618, base 16px) */
+  --text-7xl: 11.062rem;
+  --text-6xl: 6.875rem;
+  --text-5xl: 4.25rem;
+  --text-4xl: 2.625rem;
+  --text-3xl: 1.625rem;
+  --text-base: 1rem;
+
+  /* Spacing */
+  --spacing-30: 7.5rem;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #F6F4F4;
+  color: #242428;
+  font-family: "Inter Tight", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Date picker range highlight */
+.date-range-cell.in-range {
+  background-color: rgba(255, 77, 79, 0.08);
+}
+
+.date-range-cell.range-start,
+.date-range-cell.range-end {
+  background-color: #FF4D4F;
+  color: #FFFFFF;
+  border-radius: 8px;
+}
+
+.date-range-cell.range-start {
+  border-radius: 8px 0 0 8px;
+}
+
+.date-range-cell.range-end {
+  border-radius: 0 8px 8px 0;
+}
+
+.date-range-cell.range-start.range-end {
+  border-radius: 8px;
+}
+
+/* Fade-in transition */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 150ms ease forwards;
 }
