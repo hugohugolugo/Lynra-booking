@@ -6,6 +6,12 @@ const MEWS_CLIENT = process.env.MEWS_CLIENT ?? "My Client 1.0.0";
 const MEWS_HOTEL_ID = process.env.MEWS_HOTEL_ID ?? "";
 
 export async function POST(req: NextRequest) {
+  // Verify internal secret — rejects requests not originating from our own frontend.
+  const secret = req.headers.get("x-internal-secret");
+  if (!secret || secret !== process.env.INTERNAL_API_SECRET) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   // Rate limit: 30 requests per minute per IP
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
   if (isRateLimited(`hotel:${ip}`, 30, 60_000)) {

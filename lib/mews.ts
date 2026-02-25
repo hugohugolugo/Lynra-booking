@@ -16,7 +16,13 @@ import type {
 async function mewsProxy<T>(endpoint: string, body: Record<string, unknown>): Promise<T> {
   const res = await fetch(`/api/mews/${endpoint}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      // Shared secret so the API routes reject requests not from this frontend.
+      // Note: this is visible in the client bundle — it prevents casual abuse but
+      // not a determined attacker. Replace with Memberstack JWT auth before launch.
+      "x-internal-secret": process.env.NEXT_PUBLIC_INTERNAL_API_SECRET ?? "",
+    },
     body: JSON.stringify(body),
   });
 

@@ -9,6 +9,12 @@ const ALLOWED_CURRENCIES = new Set(["EUR", "USD", "CZK", "GBP", "NOK", "SEK", "D
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/;
 
 export async function POST(req: NextRequest) {
+  // Verify internal secret — rejects requests not originating from our own frontend.
+  const secret = req.headers.get("x-internal-secret");
+  if (!secret || secret !== process.env.INTERNAL_API_SECRET) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   // Rate limit: 20 requests per minute per IP
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
   if (isRateLimited(`availability:${ip}`, 20, 60_000)) {

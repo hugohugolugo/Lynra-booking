@@ -25,6 +25,12 @@ function validationError(msg: string) {
 }
 
 export async function POST(req: NextRequest) {
+  // Verify internal secret — rejects requests not originating from our own frontend.
+  const secret = req.headers.get("x-internal-secret");
+  if (!secret || secret !== process.env.INTERNAL_API_SECRET) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   // Strictest rate limit: 10 reservation attempts per hour per IP.
   // This prevents inventory bombing (creating fake reservations to block rooms).
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
@@ -54,6 +60,9 @@ export async function POST(req: NextRequest) {
   }
   if (new Date(b.StartUtc) >= new Date(b.EndUtc)) {
     return validationError("End date must be after start date");
+  }
+  if (new Date(b.StartUtc) < new Date(new Date().toISOString().slice(0, 10))) {
+    return validationError("Start date cannot be in the past");
   }
 
   // ── Room & rate ────────────────────────────────────────────────────────────
