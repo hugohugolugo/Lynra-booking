@@ -1,6 +1,6 @@
 # Security To-Do — Lynra Booking Engine
 
-Last reviewed: 2026-02-24
+Last reviewed: 2026-02-26
 Reviewer: Security audit (AI-assisted)
 Status: Prototype — not yet cleared for production
 
@@ -77,30 +77,10 @@ Docs: https://github.com/upstash/ratelimit
 
 ---
 
-### [ ] Add INTERNAL_API_SECRET to harden API routes pre-Memberstack
+### [x] Add INTERNAL_API_SECRET to harden API routes pre-Memberstack
 **File:** `.env.local`, `app/api/mews/*/route.ts`
-**Risk:** While Memberstack JWT auth is being built, the API routes have zero authentication.
-**Interim fix:** Generate a secret and require it as a header on all API calls:
-```bash
-openssl rand -hex 32
-# Add to .env.local: INTERNAL_API_SECRET=<result>
-# Add to Vercel environment variables (Production + Preview)
-```
-In each route, check:
-```ts
-const secret = req.headers.get("x-internal-secret");
-if (secret !== process.env.INTERNAL_API_SECRET) {
-  return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-}
-```
-In `lib/mews.ts`, include it in all proxy requests:
-```ts
-headers: {
-  "Content-Type": "application/json",
-  "x-internal-secret": process.env.NEXT_PUBLIC_INTERNAL_API_SECRET ?? "",
-}
-```
-Note: this secret will be in the client bundle — it prevents casual abuse but not a determined attacker. Replace with Memberstack JWT as soon as possible.
+**Implemented 2026-02-26.** All three routes verify `x-internal-secret` header against `INTERNAL_API_SECRET` env var (403 if missing or wrong). `lib/mews.ts` sends the header via `NEXT_PUBLIC_INTERNAL_API_SECRET`. Both vars set in `.env.local` and Vercel (Production + Preview).
+Note: this secret is in the client bundle — it prevents casual abuse but not a determined attacker. Replace with Memberstack JWT as soon as possible.
 
 ---
 
@@ -157,6 +137,8 @@ Note: this secret will be in the client bundle — it prevents casual abuse but 
 - [x] Fetch timeouts on all outbound proxy requests (8–10s via `AbortSignal.timeout`)
 - [x] Raw Mews error details no longer surface to the client — logged server-side only
 - [x] Reservation route validates all fields server-side: dates, UUIDs, email, nationality, adult count
+- [x] Reservation route rejects past check-in dates server-side
+- [x] `INTERNAL_API_SECRET` set — all API routes require `x-internal-secret` header (interim auth pre-Memberstack)
 - [x] Input `maxLength` on all guest form fields matching server-side limits
 - [x] Security headers: `Content-Security-Policy`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`
 - [x] `Cache-Control: no-store` on all API routes
@@ -172,7 +154,7 @@ Before pointing a real Mews property at this engine, confirm:
 - [ ] `unsafe-inline` removed from CSP, nonces implemented
 - [ ] PCI Proxy integrated and tested end-to-end
 - [ ] Redis-backed rate limiting deployed
-- [ ] `INTERNAL_API_SECRET` set (interim measure)
+- [x] `INTERNAL_API_SECRET` set (interim measure — replace with Memberstack JWT)
 - [ ] Mews Client string registered for production environment
 - [ ] Sentry or equivalent error monitoring active
 - [ ] Dependabot enabled on repository
